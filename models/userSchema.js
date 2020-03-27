@@ -79,7 +79,6 @@ userSchema.methods = {
   },
 };
 
-const User = Model('User', userSchema);
+const User = model('User', userSchema);
 
-const user = new 
 module.exports = User;
