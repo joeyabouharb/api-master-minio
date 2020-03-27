@@ -1,6 +1,9 @@
-const { Schema, model } = require('mongoose');
+const { Schema } = require('mongoose');
 const validator = require('validator').default;
 const argon2 = require('argon2');
+const { LoginDb } = require('../services/Database');
+
+const { connection } = LoginDb;
 
 const userSchema = new Schema({
   username: {
@@ -79,6 +82,6 @@ userSchema.methods = {
   },
 };
 
-const User = model('User', userSchema);
+const User = connection.model('User', userSchema);
 
-module.exports = User;
+module.exports = Object.freeze(User);
