@@ -2,10 +2,7 @@
 const { Schema } = require('mongoose');
 const validator = require('validator').default;
 const argon2 = require('argon2');
-const { LoginDb } = require('../services/Database');
 const { logger, LoggingLevel } = require('../utils/logger');
-
-const { connection } = LoginDb;
 
 const userSchema = new Schema({
   username: {
@@ -98,6 +95,6 @@ userSchema.statics = {
   },
 };
 
-const User = connection.model('User', userSchema);
+const UserFactory = (connection) => connection.model('User', userSchema);
 
-module.exports = Object.freeze(User);
+module.exports = Object.freeze(UserFactory);

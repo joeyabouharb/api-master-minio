@@ -9,7 +9,7 @@ function Database(credentials, url, db, opts) {
   this.url = () => url;
   this.db = () => db;
   this.connectionString = () => `mongodb+srv://${credentials}@${url}/${db}?${opts}`;
-  this.connection = null;
+  this.connection = mongoose;
 }
 
 Database.prototype.connect = function connect() {
