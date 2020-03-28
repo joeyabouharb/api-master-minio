@@ -4,14 +4,24 @@
   "description": "web server with a minio client service",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --init"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "argon2": "^0.26.1",
+    "chalk": "^3.0.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "helmet": "^3.22.0",
     "minio": "^7.0.15",
-    "mongoose": "^5.9.6"
+    "mongoose": "^5.9.6",
+    "validator": "^13.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1"
   }
 }
