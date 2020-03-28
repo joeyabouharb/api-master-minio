@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const { Schema } = require('mongoose');
 const validator = require('validator').default;
 const argon2 = require('argon2');
@@ -13,6 +14,11 @@ const userSchema = new Schema({
     trim: true,
     minlength: 2,
     max: 30,
+    validate(value) {
+      if (!validator.isAlphanumeric(value)) {
+        throw new Error('Only Alphanumeric characters for username');
+      }
+    },
   },
   email: {
     type: String,
@@ -26,59 +32,61 @@ const userSchema = new Schema({
     },
   },
   passwordHash: {
-    type: String,
-    required: true,
-    trim: true,
-    minlength: 1,
   },
   bucket: {
     type: String,
     required: true,
     trim: true,
+    unique: true,
   },
 });
 
 userSchema.virtual('confirmPassword')
-  .set(function set(confirmPassword) {
-    this.confirmPassword = confirmPassword;
+  .set(function set(value) {
+    this._confirmPassword = value;
   });
 
 userSchema.virtual('password')
-  .set(function set(password) {
-    if (!validator.equals(password, this.confirmPassword)) {
-      this.password = {
-        error: new Error('passwords do not match'),
-      };
-    } else if (!validator.matches(password, /^(?=.{12,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&? "-]).*$/)) {
-      this.password = {
-        error: new Error(
-          `password must be at least 12 characters long and have at least one lower case,
-          upper case and special character`,
-        ),
-      };
+  .set(function set(value) {
+    if (!validator.equals(value, this._confirmPassword)) {
+      throw new Error('passwords are not the same.');
+    } else if (!validator.matches(value, /^(?=.{12,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&? "-]).*$/)) {
+      throw new Error('passwords must contain at least 1 lower case, upper case and special character');
     } else {
-      this.password = password;
+      this._password = value;
     }
   });
 
 userSchema.pre('save', async function hash(next) {
-  if (this.password.error) {
-    next(this.password.error);
-  } else {
-    this.passwordHash = await argon2.hash(this.password);
+  try {
+    this.passwordHash = await argon2.hash(this._password);
     next();
+  } catch (err) {
+    next(err);
   }
 });
 
 userSchema.methods = {
   async comparePassword(candidate, next) {
-    const isMatch = await argon2.verify(this.passwordHash, candidate)
-      .catch((err) => next(err));
-    if (isMatch) {
-      next();
-    } else {
-      next(new Error('Incorrect Email/Password Entered'));
+    try {
+      const isMatch = await argon2.verify(this.passwordHash, candidate);
+      if (isMatch) {
+        next();
+      } else {
+        next(new Error('Incorrect Email/Password Entered'));
+      }
+    } catch (err) {
+      next(err);
     }
+  },
+};
+
+userSchema.statics = {
+  findByEmailOrUsername(credential) {
+    if (validator.isEmail(credential)) {
+      return this.findOne({ email: credential });
+    }
+    return this.findOne({ username: credential });
   },
 };
 
