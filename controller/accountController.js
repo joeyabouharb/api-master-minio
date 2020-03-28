@@ -3,7 +3,9 @@ const User = require('../models/userSchema');
 const { logger, LoggingLevel } = require('../utils/logger');
 
 function loginViewModel({ credential, password }) {
-  return Boolean(credential && password);
+  return {
+    isValid: Boolean(credential && password),
+  };
 }
 
 const register = async (req, res) => {
@@ -16,6 +18,7 @@ const register = async (req, res) => {
       bucket: `bucket${Math.random()}`, // to do create an actual bucket
     });
     await user.save();
+    logger.Log(LoggingLevel.Info, 'user created');
     res.send({
       created: true,
     }).status(404);

@@ -20,14 +20,14 @@ Database.prototype.connect = function connect() {
       useUnifiedTopology: true,
     },
   );
-  this.connection.catch(async (err) => {
-    await logger.Log(LoggingLevel.Error, `unsuccessful connection to database ${this.url()}/${this.db()}`, err);
-  });
   this.connection.on('connected', async () => {
-    await logger.Log(LoggingLevel.Info, `Connection to db ${this.url()} using collection: ${this.db()} was successful!`);
+    await logger.Log(LoggingLevel.Info, `Connection to cluster ${this.url()} with db: ${this.db()} was successful!`);
   });
   this.connection.on('disconnected', async () => {
-    await logger.Log(LoggingLevel.Warn, `Connection to db ${this.url()} using collection: ${this.db()} disconnected!`);
+    await logger.Log(LoggingLevel.Warn, `Connection to cluster ${this.url()} with db: ${this.db()} disconnected!`);
+  });
+  this.connection.catch(async (err) => {
+    await logger.Log(LoggingLevel.Error, `unsuccessful connection to database ${this.url()}/${this.db()}`, err);
   });
 };
 

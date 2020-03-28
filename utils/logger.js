@@ -1,6 +1,11 @@
 const fs = require('fs');
+const { promisify } = require('util');
 const path = require('path');
 const chalk = require('chalk');
+
+const appendFile = promisify(fs.appendFile);
+const exists = promisify(fs.exists);
+const mkdir = promisify(fs.mkdir);
 
 const LoggingLevel = {
   Info: {
@@ -24,14 +29,18 @@ const LoggingLevel = {
 
 const { log: writeToConsole } = console;
 
-const writeLineToFile = (output, file) => {
+const writeLineToFile = async (output, file) => {
   const fullpath = path.join(__dirname, file);
-  return fs.exists(fullpath, (exists) => {
-    if (!exists) {
-      fs.openSync(fullpath, 'w');
-    }
-    return fs.appendFile(fullpath, `${output}\n`, () => {});
-  });
+  const dir = path.dirname(fullpath);
+  return exists(path.join(dir))
+    .then((dirExists) => {
+      if (!dirExists) {
+        mkdir(dir);
+      }
+    })
+    .then(() => (
+      appendFile(fullpath, `${output}\n`)
+    ));
 };
 
 
@@ -48,7 +57,7 @@ Logger.prototype.getLogger = function getter() {
       const { stack } = trace;
       line += stack.split('\n')[1].split(' ').pop();
     }
-    const output = `${Date.now()}\t---${level.name}--- ${message} ${ex.stack || line}`;
+    const output = `${new Date().toTimeString()} ---${level.name}--- ${message} ${ex.stack || line}`;
     writeToConsole(level.color(output));
     return writeLineToFile(output, file);
   }
@@ -56,6 +65,6 @@ Logger.prototype.getLogger = function getter() {
 };
 
 module.exports = Object.freeze({
-  logger: new Logger('feature', Date.now()).getLogger(),
+  logger: new Logger('../logs/log', new Date().toLocaleDateString('ko-KR')).getLogger(),
   LoggingLevel,
 });

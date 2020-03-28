@@ -3,6 +3,7 @@ const { Schema } = require('mongoose');
 const validator = require('validator').default;
 const argon2 = require('argon2');
 const { LoginDb } = require('../services/Database');
+const { logger, LoggingLevel } = require('../utils/logger');
 
 const { connection } = LoginDb;
 
@@ -39,6 +40,12 @@ const userSchema = new Schema({
     trim: true,
     unique: true,
   },
+}, {
+  writeConcern: {
+    w: 'majority',
+    j: true,
+    wtimeout: 1000,
+  },
 });
 
 userSchema.virtual('confirmPassword')
@@ -62,6 +69,7 @@ userSchema.pre('save', async function hash(next) {
     this.passwordHash = await argon2.hash(this._password);
     next();
   } catch (err) {
+    logger.Log(LoggingLevel.Error, err.message, err);
     next(err);
   }
 });

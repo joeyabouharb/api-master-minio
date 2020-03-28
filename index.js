@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
-require('./services/Database').LoginDb.connect();
-const accountRoute = require('./routes/accountRoute');
 const { expressErrorLogger, expressLogger, listen } = require('./utils/middlewares');
+
+require('./services/Database').LoginDb.connect();
+
+const accountRoute = require('./routes/accountRoute');
 
 const { PORT, HOST } = process.env;
 
@@ -18,7 +20,7 @@ app.use(expressErrorLogger);
 // logger
 app.use(expressLogger);
 
-// account routes
+// routes
 app.use(
   '/api/accounts', accountRoute,
 );
