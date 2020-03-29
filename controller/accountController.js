@@ -1,12 +1,13 @@
 
 const UserFactory = require('../models/userSchema');
 const { LoginDb } = require('../services/Database');
-const { logger, LoggingLevel } = require('../utils/logger');
+const { getLogger, LoggingLevel } = require('../utils/logger');
 const { signJwt } = require('../utils/jwt');
 const Minio = require('../services/MinIO');
 
 const register = (req, res) => {
   try {
+    const logger = getLogger();
     const User = UserFactory(LoginDb.connection);
     const user = new User({
       username: req.body.username,
@@ -64,6 +65,7 @@ const register = (req, res) => {
 
 const login = async (req, res) => {
   try {
+    const logger = getLogger();
     const User = UserFactory(LoginDb.connection);
     const user = await User.findByEmailOrUsername(req.body.credential);
     if (user) {

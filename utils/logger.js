@@ -3,7 +3,7 @@ const { promisify } = require('util');
 const path = require('path');
 const chalk = require('chalk');
 
-const appendFile = promisify(fs.appendFile);
+const { PassThrough } = require('stream');
 const exists = promisify(fs.exists);
 const mkdir = promisify(fs.mkdir);
 
@@ -29,28 +29,40 @@ const LoggingLevel = {
 
 const { log: writeToConsole } = console;
 
-const writeLineToFile = async (output, file) => {
-  const fullpath = path.join(__dirname, file);
-  const dir = path.dirname(fullpath);
-  return exists(path.join(dir))
-    .then((dirExists) => {
-      if (!dirExists) {
-        mkdir(dir);
+
+
+function Logger(directory) {
+  const startDate = new Date().toLocaleDateString('ko-KR');
+  const fileName = `${directory}/log-${startDate}log`;
+  this.writeStream = () => exists(directory)
+    .then((doesExist) => {
+      if (!doesExist) {
+        mkdir(directory);
       }
+      console.log('hello');
     })
-    .then(() => (
-      appendFile(fullpath, `${output}\n`)
-    ));
+    .then(() => {
+      console.log('hello')
+      const st = fs.createWriteStream(fileName, { flags: 'a' });
+      const ps = new PassThrough();
+      ps.end(Buffer.from('helloooo'));
+      ps.pipe(st);
+      return st;
+    })
+}
+
+const writeLineToFile = (output, writeStream) => {
+  writeStream.on('error', (err) => console.log)
+  const readStream = new PassThrough();
+  readStream.end(Buffer.from(`${output}\n`));
+  readStream.pipe(writeStream);
+  writeStream.end();
 };
 
-
-function Logger(logFile, startDate) {
-  this.fileName = () => `../logs/${logFile}-${startDate}`;
-}
-Logger.prototype.getLogger = function getter() {
-  const file = this.fileName();
-  function Log(level, message, ex = {}) {
-    let line = `\n\tat function ${Log.caller.name || '<Anonymous>'}(): on line `;
+Logger.prototype.getLogger = function getLogInstace() {
+  const writeStream = this.writeStream;
+  function Log (level, message, ex = {}) {
+    let line = `\n\tat ${Log.caller.name || '<Anonymous>'}: on line `;
     if (!ex.stack) {
       const trace = {};
       Error.captureStackTrace(trace, Log);
@@ -59,12 +71,25 @@ Logger.prototype.getLogger = function getter() {
     }
     const output = `${new Date().toTimeString()} ---${level.name}--- ${message} ${ex.stack || line}`;
     writeToConsole(level.color(output));
-    return writeLineToFile(output, file);
+    return writeStream().then((write) => {
+      writeLineToFile(output, write)
+    });
   }
   return { Log };
 };
 
-module.exports = Object.freeze({
-  logger: new Logger('../logs/log', new Date().toLocaleDateString('ko-KR')).getLogger(),
+const exported = {
+  logger: null, // default instance
+  createLogger(directory) {
+    this.logger = new Logger(directory);
+  },
+  getLogger() {
+    return this.logger.getLogger();
+  },
+};
+
+module.exports = {
+  createLogger: exported.createLogger.bind(exported),
+  getLogger: exported.getLogger.bind(exported),
   LoggingLevel,
-});
+};

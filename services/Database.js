@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const { logger, LoggingLevel } = require('../utils/logger');
+const { getLogger, LoggingLevel } = require('../utils/logger');
+
 
 const {
   LOGIN_CREDENTIALS, LOGIN_URL, LOGIN_DB, LOGIN_OPTS,
@@ -13,6 +14,7 @@ function Database(credentials, url, db, opts) {
 }
 
 Database.prototype.connect = function connect() {
+  const logger = getLogger();
   this.connection = mongoose.createConnection(
     this.connectionString(), {
       useNewUrlParser: true,
