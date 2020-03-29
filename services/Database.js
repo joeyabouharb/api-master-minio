@@ -14,7 +14,7 @@ function Database(credentials, url, db, opts) {
 }
 
 Database.prototype.connect = function connect() {
-  const logger = getLogger();
+  const Log = getLogger();
   this.connection = mongoose.createConnection(
     this.connectionString(), {
       useNewUrlParser: true,
@@ -23,13 +23,13 @@ Database.prototype.connect = function connect() {
     },
   );
   this.connection.on('connected', async () => {
-    await logger.Log(LoggingLevel.Info, `Connection to cluster ${this.url()} with db: ${this.db()} was successful!`);
+    Log(LoggingLevel.Info, `Connection to cluster ${this.url()} with db: ${this.db()} was successful!`);
   });
   this.connection.on('disconnected', async () => {
-    await logger.Log(LoggingLevel.Warn, `Connection to cluster ${this.url()} with db: ${this.db()} disconnected!`);
+    Log(LoggingLevel.Warn, `Connection to cluster ${this.url()} with db: ${this.db()} disconnected!`);
   });
   this.connection.catch(async (err) => {
-    await logger.Log(LoggingLevel.Error, `unsuccessful connection to database ${this.url()}/${this.db()}`, err);
+    Log(LoggingLevel.Error, `unsuccessful connection to database ${this.url()}/${this.db()}`, err);
   });
 };
 

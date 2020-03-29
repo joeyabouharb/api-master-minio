@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const path = require('path');
-
 require('./utils/logger').createLogger(path.join(__dirname, './logs'));
 require('./services/Database').LoginDb.connect();
 const { expressErrorLogger, expressLogger, listen } = require('./utils/middlewares');
