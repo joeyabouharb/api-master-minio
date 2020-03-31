@@ -1,11 +1,7 @@
 const fs = require('fs');
-const { promisify } = require('util');
-const path = require('path');
 const chalk = require('chalk');
 
 const { PassThrough } = require('stream');
-const exists = promisify(fs.exists);
-const mkdir = promisify(fs.mkdir);
 
 const LoggingLevel = {
   Info: {
@@ -30,7 +26,6 @@ const LoggingLevel = {
 const { log: writeToConsole } = console;
 
 
-
 function Logger(directory) {
   const startDate = new Date().toLocaleDateString('ko-KR');
   const fileName = `${directory}/log-${startDate}log`;
@@ -49,21 +44,21 @@ Logger.prototype.getLogger = function Log(level, message, ex = {}) {
   }
   const output = `${new Date().toTimeString()} ---${level.name}--- ${message} ${ex.stack || line}`;
   writeToConsole(level.color(output));
-  this.readStream.write(Buffer.from(`${output}\n`))
+  this.readStream.write(Buffer.from(`${output}\n`));
 };
 
 const exported = {
   logger: null, // default instance
   createLogger(directory) {
     if (!fs.existsSync(directory)) {
-      fs.mkdirSync(directory)
+      fs.mkdirSync(directory);
     }
     this.logger = new Logger(directory);
   },
   getLogger() {
-    if (this.logger) 
+    if (this.logger) {
       return this.logger.getLogger.bind(this.logger);
-    else
+    }
     throw new Error('no logger Instance found');
   },
 };

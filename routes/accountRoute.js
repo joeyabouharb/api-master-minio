@@ -4,9 +4,13 @@ const accountController = require('../controller/accountController');
 const accountRouter = Router();
 
 accountRouter.route('/')
-  .get(accountController.login)
-  .post(accountController.register)
   .delete()
   .patch();
+
+accountRouter.route('/register')
+  .post(accountController.register);
+
+accountRouter.route('/login')
+  .post(accountController.login);
 
 module.exports = Object.freeze(accountRouter);

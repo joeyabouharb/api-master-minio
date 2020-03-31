@@ -6,8 +6,8 @@ const { signJwt } = require('../utils/jwt');
 const Minio = require('../services/MinIO');
 
 const register = (req, res) => {
+  const Log = getLogger();
   try {
-    const logger = getLogger();
     const User = UserFactory(LoginDb.connection);
     const user = new User({
       username: req.body.username,
@@ -22,77 +22,80 @@ const register = (req, res) => {
         return client.makeBucket(user.bucket, 'us-east-1');
       })
       .then(() => {
-        logger.Log(LoggingLevel.Info, 'user created');
+        Log(LoggingLevel.Info, 'user created');
         res.send({
           created: true,
         }).status(200);
       })
       .catch((err) => {
+        Log(LoggingLevel.Error, err.message, err);
         if (err.code === 11000) {
           if (err.keyPattern.username || err.keyPattern.email) {
-            res.send({
+            res.status(400).send({
               created: false,
-              msg: 'user already exists',
-            }).status(400);
+              message: 'user already exists',
+            });
           } else if (err.keyPattern.bucket) {
-            res.send({
+            res.status(400).send({
               created: false,
-              msg: 'bucket name already exists',
-            }).status(400);
+              message: 'bucket name already exists',
+            });
           }
         } else if (err.name === 'ValidationError') {
           const names = Object.keys(err.errors);
-          res.send({
+          res.status(400).send({
             created: false,
-            msg: `required paramaters ${names.join(', ')} missing`,
-          }).status(400);
+            message: `required paramaters ${names.join(', ')} missing`,
+          });
         } else {
-          res.send({
+          res.status(400).send({
             created: false,
-            msg: 'unknown error',
-          }).status(400);
+            message: 'user already exists',
+          });
         }
-        logger.Log(LoggingLevel.Error, err.message, err);
       });
   } catch (err) {
-    logger.Log(LoggingLevel.Error, err.message, err);
-    res.send({
+    Log(LoggingLevel.Error, err.message, err);
+    res.status(400).send({
       created: false,
-      error: 'unknown error',
-    }).status(400);
+      message: 'An unexpected error occured',
+    });
   }
 };
 
 const login = async (req, res) => {
+  const Log = getLogger();
   try {
-    const logger = getLogger();
     const User = UserFactory(LoginDb.connection);
     const user = await User.findByEmailOrUsername(req.body.credential);
     if (user) {
       user.comparePassword(req.body.password, (err) => {
         if (err) {
-          res.send({ error: err.message }).status(403);
+          Log(LoggingLevel.Error, err.message, err);
+          res.status(403).send({ message: 'ncorrect Email/Password Entered' });
         } else {
           signJwt({ username: user.username, bucket: user.bucket })
             .then((token) => {
-              res.send({ success: true, token }).status(200);
+              Log(LoggingLevel.Info, 'hello');
+              res.send({ success: true, token });
             })
             .catch((error) => {
-              logger.Log(LoggingLevel.Error, error.message, error);
-              res.send({ success: false }).status(400);
+              Log(LoggingLevel.Error, error.message, error);
+              res.status(400).send({ success: false, message: 'unexpected error occured' });
             });
         }
       });
     } else {
-      res.send({
-        error: 'Incorrect Email/Password Entered',
-      }).status(403);
+      Log(LoggingLevel.Info, 'no log in :(');
+      res.status(403).send({
+        message: 'Incorrect Email/Password Entered',
+      });
     }
   } catch (err) {
-    logger.Log(LoggingLevel.Error, err.message, err);
-    res.send({
-      error: 'Incorrect Email/Password Entered',
-    }).status(403);
+    Log(LoggingLevel.Error, err.message, err);
+    res.status(403).send({
+      message: 'Incorrect Email/Password Entered',
+    });
   }
 };
 

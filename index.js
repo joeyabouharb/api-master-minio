@@ -1,7 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
+const cors = require('cors');
 const path = require('path');
+
 require('./utils/logger').createLogger(path.join(__dirname, './logs'));
 require('./services/Database').LoginDb.connect();
 const { expressErrorLogger, expressLogger, listen } = require('./utils/middlewares');
@@ -10,6 +12,7 @@ const { PORT, HOST } = process.env;
 
 const app = express();
 app.use(helmet());
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -96,5 +96,4 @@ userSchema.statics = {
 };
 
 const UserFactory = (connection) => connection.model('User', userSchema);
-
 module.exports = Object.freeze(UserFactory);
