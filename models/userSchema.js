@@ -2,7 +2,7 @@
 const { Schema } = require('mongoose');
 const validator = require('validator').default;
 const argon2 = require('argon2');
-const { logger, LoggingLevel } = require('../utils/logger');
+const { Log, LoggingLevel } = require('../utils/logger');
 
 const userSchema = new Schema({
   username: {
@@ -62,26 +62,24 @@ userSchema.virtual('password')
   });
 
 userSchema.pre('save', async function hash(next) {
-  try {
-    this.passwordHash = await argon2.hash(this._password);
-    next();
-  } catch (err) {
-    logger.Log(LoggingLevel.Error, err.message, err);
-    next(err);
-  }
+  this.passwordHash = await argon2.hash(this._password)
+    .catch((err) => {
+      Log(LoggingLevel.Error, err.message, err);
+      next(err);
+    });
+  next();
 });
 
 userSchema.methods = {
   async comparePassword(candidate, next) {
-    try {
-      const isMatch = await argon2.verify(this.passwordHash, candidate);
-      if (isMatch) {
-        next();
-      } else {
-        next(new Error('Incorrect Email/Password Entered'));
-      }
-    } catch (err) {
-      next(err);
+    const isMatch = await argon2.verify(this.passwordHash, candidate)
+      .catch((err) => {
+        Log(LoggingLevel.Error, err.message, err);
+      });
+    if (isMatch) {
+      next();
+    } else {
+      next(new Error('Incorrect Email/Password Entered'));
     }
   },
 };

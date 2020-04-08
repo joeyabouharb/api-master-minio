@@ -1,0 +1,32 @@
+<form enctype="multipart/form-data" method="post" id="form">
+  <div>File: <input type="file" multiple="multiple" name="someExpressFiles" id="files"/></div>
+  <input type="submit" value="Upload"/>
+</form>
+<div id="view">
+
+</div>
+<script>
+  document.getElementById('form').addEventListener("submit", (event) => {
+    event.preventDefault();
+    const { files } = document.getElementById('files');
+    const formData = new FormData();
+    console.log(files)
+    Object.entries(files).forEach(([key, value]) => {
+      formData.append('file', value, key);
+      console.log(value);
+    });
+    console.log(formData);
+    fetch('http://localhost:4444/api/files/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    .then((response) => response.blob())
+    .then((data) => {
+      console.log(data);
+      const img = document.createElement('img')
+      img.src = URL.createObjectURL(data);
+      document.getElementById('view').appendChild(img);
+    })
+    .catch(error => console.log(error));
+  });
+</script>

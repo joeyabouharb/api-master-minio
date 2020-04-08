@@ -1,12 +1,11 @@
 
 const UserFactory = require('../models/userSchema');
 const { LoginDb } = require('../services/Database');
-const { getLogger, LoggingLevel } = require('../utils/logger');
+const { Log, LoggingLevel } = require('../utils/logger');
 const { signJwt } = require('../utils/jwt');
 const Minio = require('../services/MinIO');
 
 const register = (req, res) => {
-  const Log = getLogger();
   try {
     const User = UserFactory(LoginDb.connection);
     const user = new User({
@@ -48,9 +47,9 @@ const register = (req, res) => {
             message: `required paramaters ${names.join(', ')} missing`,
           });
         } else {
-          res.status(400).send({
+          res.status(500).send({
             created: false,
-            message: 'user already exists',
+            message: 'We could not contact our services at this time?',
           });
         }
       });
@@ -64,7 +63,6 @@ const register = (req, res) => {
 };
 
 const login = async (req, res) => {
-  const Log = getLogger();
   try {
     const User = UserFactory(LoginDb.connection);
     const user = await User.findByEmailOrUsername(req.body.credential);

@@ -1,7 +1,10 @@
 const fs = require('fs');
+const { Readable } = require('stream');
+const { promisify } = require('util');
 const chalk = require('chalk');
 
-const { PassThrough } = require('stream');
+const exists = promisify(fs.exists);
+const mkdir = promisify(fs.mkdir);
 
 const LoggingLevel = {
   Info: {
@@ -22,49 +25,45 @@ const LoggingLevel = {
   },
 };
 
-
-const { log: writeToConsole } = console;
-
-
-function Logger(directory) {
-  const startDate = new Date().toLocaleDateString('ko-KR');
-  const fileName = `${directory}/log-${startDate}log`;
-  this.writeStream = fs.createWriteStream(fileName, { flags: 'a' });
-  this.readStream = new PassThrough();
-  this.readStream.pipe(this.writeStream);
+async function getLogger() {
+  const { log } = console;
+  const directory = 'logs';
+  if (!await exists(directory)) {
+    await mkdir(directory).catch((err) => log(LoggingLevel.Error.color(err.message)));
+  }
+  const writeStream = function writestream(startDate) {
+    const fileName = `${directory}/log-${startDate}.log`;
+    const filename = fileName;
+    return fs.createWriteStream(filename, { flags: 'a' });
+  };
+  return Object.freeze((level, message, stack) => {
+    const output = `${new Date().toTimeString()} ---${level.name}--- ${message} ${stack}`;
+    log(level.color(output));
+    const reader = Readable.from(`${output}\n`);
+    const date = new Date().toLocaleDateString().replace(/\//g, '-');
+    const writer = writeStream(date);
+    reader.pipe(writer);
+  });
 }
 
-Logger.prototype.getLogger = function Log(level, message, ex = {}) {
-  let line = `\n\tat ${Log.caller.name || '<Anonymous>'}: on line `;
+const Logger = async () => {
+  const log = await getLogger();
+  return log;
+};
+
+function logger(level, message, ex = {}) {
+  let line = ex.stack || `\n\tat ${logger.caller.name || '<Anonymous>'}: on line `;
   if (!ex.stack) {
     const trace = {};
-    Error.captureStackTrace(trace, Log);
+    Error.captureStackTrace(trace, logger);
     const { stack } = trace;
     line += stack.split('\n')[1].split(' ').pop();
   }
-  const output = `${new Date().toTimeString()} ---${level.name}--- ${message} ${ex.stack || line}`;
-  writeToConsole(level.color(output));
-  this.readStream.write(Buffer.from(`${output}\n`));
-};
+  Logger()
+    .then((log) => log(level, message, line));
+}
 
-const exported = {
-  logger: null, // default instance
-  createLogger(directory) {
-    if (!fs.existsSync(directory)) {
-      fs.mkdirSync(directory);
-    }
-    this.logger = new Logger(directory);
-  },
-  getLogger() {
-    if (this.logger) {
-      return this.logger.getLogger.bind(this.logger);
-    }
-    throw new Error('no logger Instance found');
-  },
-};
-
-module.exports = {
-  createLogger: exported.createLogger.bind(exported),
-  getLogger: exported.getLogger.bind(exported),
+module.exports = Object.freeze({
+  Log: logger,
   LoggingLevel,
-};
+});

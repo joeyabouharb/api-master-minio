@@ -1,11 +1,20 @@
 const { Client } = require('minio');
+const { Log, LoggingLevel } = require('../utils/logger');
 
-const minIOClient = () => new Client({
-  endPoint: process.env.END_POINT,
-  port: process.env.MINO_PORT,
-  useSSL: Boolean(process.env.MINIO_SSL),
-  accessKey: process.env.ACCESS_KEY,
-  secretKey: process.env.SECRET_KEY,
-});
+const {
+  END_POINT, MINIO_PORT, MINIO_SSL, ACCESS_KEY, SECRET_KEY,
+} = process.env;
+
+const minIOClient = function getMinioConnection() {
+  const client = new Client({
+    endPoint: END_POINT,
+    port: Number(MINIO_PORT),
+    useSSL: Boolean(Number(MINIO_SSL)),
+    accessKey: ACCESS_KEY,
+    secretKey: SECRET_KEY,
+  });
+  Log(LoggingLevel.Info, `connection to ${END_POINT} successful!`);
+  return client;
+};
 
 module.exports = Object.freeze(minIOClient);
