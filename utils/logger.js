@@ -12,7 +12,7 @@ const LoggingLevel = {
     name: 'Info',
   },
   Debug: {
-    color: chalk.magenta,
+    color: chalk.redBright,
     name: 'Debug',
   },
   Warn: {

@@ -1,5 +1,6 @@
 const { Client } = require('minio');
 const { Log, LoggingLevel } = require('../utils/logger');
+require('dotenv').config();
 
 const {
   END_POINT, MINIO_PORT, MINIO_SSL, ACCESS_KEY, SECRET_KEY,
@@ -16,5 +17,7 @@ const minIOClient = function getMinioConnection() {
   Log(LoggingLevel.Info, `connection to ${END_POINT} successful!`);
   return client;
 };
+
+const { createWriteStream, createReadStream } = require('fs');
 
 module.exports = Object.freeze(minIOClient);
