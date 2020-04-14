@@ -39,10 +39,10 @@ async function getLogger() {
   return Object.freeze((level, message, stack) => {
     const output = `${new Date().toTimeString()} ---${level.name}--- ${message} ${stack}`;
     log(level.color(output));
-    const reader = Readable.from(`${output}\n`);
-    const date = new Date().toLocaleDateString().replace(/\//g, '-');
-    const writer = writeStream(date);
-    reader.pipe(writer);
+    // const reader = Readable.from(`${output}\n`);
+    // const date = new Date().toLocaleDateString().replace(/\//g, '-');
+    // const writer = writeStream(date);
+    // reader.pipe(writer);
   });
 }
 
