@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-syntax */
-const { PassThrough } = require('stream');
 const { Form } = require('multiparty');
 const MinIO = require('../services/MinIO');
 const { Log, LoggingLevel } = require('../utils/logger');
@@ -64,7 +63,7 @@ const download = (req, res) => {
       return stream.pipe(res);
     })
     .catch((err) => {
-      console.log(err);
+      Log(LoggingLevel.Error, err.message, err);
       res.status(400).send({ message: 'Download Failed!' });
     });
 };
