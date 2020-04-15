@@ -3,6 +3,7 @@ const { Schema } = require('mongoose');
 const validator = require('validator').default;
 const argon2 = require('argon2');
 const { Log, LoggingLevel } = require('../utils/logger');
+const { Regex } = require('../utils/helpers');
 
 const userSchema = new Schema({
   username: {
@@ -34,6 +35,11 @@ const userSchema = new Schema({
   bucket: {
     type: String,
     required: true,
+    validate(value) {
+      if (!validator.matches(value, Regex('[a-z0-9-]+'))) {
+        throw new Error('not a valid bucket name!');
+      }
+    },
     trim: true,
     unique: true,
   },
@@ -52,9 +58,15 @@ userSchema.virtual('confirmPassword')
 
 userSchema.virtual('password')
   .set(function set(value) {
+    const passwordPattern = `
+      ^(?=.{12,})
+      (?=.*[a-zA-Z])
+      (?=.*\d)
+      (?=.*[@^_!#$%&? "-]).*$
+    `;
     if (!validator.equals(value, this._confirmPassword)) {
       throw new Error('passwords are not the same.');
-    } else if (!validator.matches(value, /^(?=.{12,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[@^_!#$%&? "-]).*$/)) {
+    } else if (!validator.matches(value, Regex(passwordPattern))) {
       throw new Error('passwords must contain at least 1 lower case, upper case and special character');
     } else {
       this._password = value;
