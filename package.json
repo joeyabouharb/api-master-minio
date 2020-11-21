@@ -12,22 +12,22 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "argon2": "^0.26.1",
+    "argon2": "^0.26.2",
     "chalk": "^3.0.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "formidable": "^2.0.0-canary.20200226.1",
-    "helmet": "^3.22.0",
+    "formidable": "^2.0.0-dev.20200131.2",
+    "helmet": "^3.23.3",
     "jsonwebtoken": "^8.5.1",
-    "minio": "^7.0.15",
-    "mongoose": "^5.9.6",
-    "multiparty": "^4.2.1",
-    "validator": "^13.0.0"
+    "minio": "^7.0.16",
+    "mongoose": "^5.10.15",
+    "multiparty": "^4.2.2",
+    "validator": "^13.1.17"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.1"
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
   }
 }

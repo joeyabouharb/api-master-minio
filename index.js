@@ -6,7 +6,7 @@ const cors = require('cors');
 require('./services/Database').LoginDb.connect();
 const { expressErrorLogger, expressLogger, listen } = require('./utils/middlewares');
 
-const { PORT, HOST } = process.env;
+const { PORT = 4444, HOST = 'localhost' } = process.env;
 
 const app = express();
 app.use(helmet());

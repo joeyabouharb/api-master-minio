@@ -54,7 +54,7 @@ userSchema.virtual('password')
   .set(function set(value) {
     if (!validator.equals(value, this._confirmPassword)) {
       throw new Error('passwords are not the same.');
-    } else if (!validator.matches(value, /^(?=.{12,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&? "-]).*$/)) {
+    } else if (!value.match(/^(?=.{12,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&? "-]).*$/)) {
       throw new Error('passwords must contain at least 1 lower case, upper case and special character');
     } else {
       this._password = value;

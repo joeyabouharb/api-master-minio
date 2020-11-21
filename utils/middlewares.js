@@ -19,9 +19,8 @@ function expressLogger(req, res, next) {
   next();
 }
 
-async function listen() {
-  const { PORT, HOST } = process.env;
-  Log(LoggingLevel.Info, `Express has started! Now listening on http://${HOST}:${PORT}`);
+async function listen(port, host) {
+  Log(LoggingLevel.Info, `Express has started! Now listening on http://${host}:${port}`);
 }
 
 module.exports = Object.freeze({
